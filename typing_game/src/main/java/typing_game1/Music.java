@@ -37,17 +37,6 @@ public class Music extends Thread {
 		player.close();
 		this.interrupt();
 	}
-	public void restart() {
-		try {
-			this.isLoop = true;
-			file = new File(Main.class.getResource("../music/" + this.name).toURI());
-			fin = new FileInputStream(file);
-			bin = new BufferedInputStream(fin);
-			player = new Player(bin);
-		}catch(Exception e) {
-			System.out.println(e.getMessage());
-		}
-	}
 	@Override
 	public void run() {
 		try {

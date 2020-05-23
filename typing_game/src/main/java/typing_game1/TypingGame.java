@@ -2,8 +2,11 @@ package typing_game1;
 
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.RenderingHints;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
@@ -31,7 +34,9 @@ public class TypingGame extends JFrame {
 	private ImageIcon enteredRightButtonImage = new ImageIcon(Main.class.getResource("../image/enteredSelectRight.png"));
 	private ImageIcon basicBackButtonImage = new ImageIcon(Main.class.getResource("../image/basicBackImage.png"));
 	private ImageIcon enteredBackButtonImage = new ImageIcon(Main.class.getResource("../image/enteredBackImage.png"));
-	private Image Background = new ImageIcon(Main.class.getResource("../image/startImage2.png")).getImage();
+	private ImageIcon basicSelectGameImage = new ImageIcon(Main.class.getResource("../image/basicSelectGame.png"));
+	private ImageIcon enteredSelectGameImage = new ImageIcon(Main.class.getResource("../image/enteredSelectGame.png"));
+	
 
 	private JLabel menuBar = new JLabel(new ImageIcon(Main.class.getResource("../image/menuBar2.png")));
 	private JButton exitButton = new JButton(basicExitButtonImage);
@@ -40,17 +45,26 @@ public class TypingGame extends JFrame {
 	private JButton LeftButton = new JButton(basicLeftButtonImage);
 	private JButton RightButton = new JButton(basicRightButtonImage);
 	private JButton BackButton = new JButton(basicBackButtonImage);
+	private JButton SelectGameButton = new JButton(basicSelectGameImage);
+	
 	
 	private int mouseX, mouseY;
 	
-	private boolean isMainScreen = false;
 	ArrayList<Track> trackList = new ArrayList<Track>();
+	ArrayList<Screen> screenList = new ArrayList<Screen>();
 	
+	private Image Background;
 	private Image titleImage;		//노래선택화면의 노래 제목 이미지
+	private Image InformationImage = new ImageIcon(Main.class.getResource("../image/InformationImage.png")).getImage();
+
+	
+	private Music startMusic = new Music("startmusic.mp3",true);	//시작화면 노래
 	private Music playingMusic;		//노래선택화면의 해당 트랙의 노래
 	private Image albumImage;		//노래선택화면의 노래 앨범 이미지
-	private int now = 0;			//현재 트랙
-	Music startMusic = new Music("startmusic.mp3", true);	//시작화면의 노래
+	private int nowTrack = 0;		//현재 트랙
+	private int nowScreen = 0;		//현재 화면
+	
+	public static Game game = new Game();
 	
 	public TypingGame() {
 		setUndecorated(true);
@@ -62,13 +76,24 @@ public class TypingGame extends JFrame {
 		setVisible(true);
 		setBackground(new Color(0, 0, 0, 0));
 		setLayout(null);
+		
 		LeftButton.setVisible(false);
 		RightButton.setVisible(false);
 		BackButton.setVisible(false);
+		SelectGameButton.setVisible(false);
+		trackList.add(new Track("meetyou_title.png","Meetyou_Album.png", "Meetyou_Game.jpg", "meetyou.highlight.mp3", "meetyou.mp3"));
+		trackList.add(new Track("canon_title.png","Canon_Album.png", "Canon_Game.jpg", "canon.mp3", "canon.mp3"));
+		trackList.add(new Track("sleepingbeauty_title.png","Sleeping Beauty_Album.png", "Sleeping Beauty_Game.jpg", "Sleeping Beauty.highlight.mp3", "Sleeping Beuaty.mp3"));
+		screenList.add(new Screen("startImage2.png"));			//screenList.get(0) == 시작화면
+		screenList.add(new Screen("gameSelectPage.jpg"));		//screenList.get(1) == 노래선택화면
+		screenList.add(new Screen(trackList.get(0).getGameImage()));	//screenList.get(2) == 너름만나 게임화면
+		screenList.add(new Screen(trackList.get(1).getGameImage()));	//screenList.get(3) == 캐논변주곡 게임화면
+		screenList.add(new Screen(trackList.get(2).getGameImage()));	//screenList.get(4) == sleeping beauty 게임화면
+		
+		selectScreen(nowScreen);
 		startMusic.start();
-		trackList.add(new Track("meetyou_title.png","Meetyou_Album.png", "Meetyou_Album.png", "meetyou.highlight.mp3", "meetyou.mp3"));
-		trackList.add(new Track("canon_title.png","Canon_Album.png", "Canon_Album.png", "canon.mp3", "canon.mp3"));
-		trackList.add(new Track("sleepingbeauty_title.png","Sleeping Beauty_Album.png", "Sleeping Beauty_Album.png", "Sleeping Beauty.highlight.mp3", "Sleeping Beuaty.mp3"));
+		
+		addKeyListener(new KeyListener());
 		
 		exitButton.setBounds(1232, 0, 48, 30);	//상단 오른쪽의 나가기 버튼
 		exitButton.setBorderPainted(false);		//외곽 색칠
@@ -114,15 +139,7 @@ public class TypingGame extends JFrame {
 			}
 			@Override
 			public void mousePressed(MouseEvent e) {
-				startMusic.close();					//시작화면에서 들리던 배경음악 종료
-				selectTrack(now);					//해당 노래의 트랙이 실행 된다.
-				startButton.setVisible(false);		//시작화면의 버튼이 안보이게 한다.
-				quitButton.setVisible(false);
-				LeftButton.setVisible(true);		//노래 선택 화면의 버튼이 보이게 한다.
-				RightButton.setVisible(true);
-				BackButton.setVisible(true);
-				Background = new ImageIcon(Main.class.getResource("../image/gameSelectPage.jpg")).getImage();	//배경도 교체
-				isMainScreen = true;
+				goSelect();
 			}
 		});
 		add(startButton);
@@ -233,39 +250,71 @@ public class TypingGame extends JFrame {
 			}
 			@Override
 			public void mousePressed(MouseEvent e) {
-				playingMusic.close();
-				startMusic= new Music("startmusic.mp3", true);
-				startMusic.start();
-				startButton.setVisible(true);
-				quitButton.setVisible(true);
-				LeftButton.setVisible(false);
-				RightButton.setVisible(false);
-				BackButton.setVisible(false);
-				Background = new ImageIcon(Main.class.getResource("../image/startImage2.png")).getImage();
-				isMainScreen = false;
+				Back();
 			}
 		});
 		add(BackButton);
+		
+		SelectGameButton.setBounds(390, 50, 500, 500);	//음악고르기 오른쪽 버튼
+		SelectGameButton.setBorderPainted(false);
+		SelectGameButton.setContentAreaFilled(false);
+		SelectGameButton.setFocusPainted(false);
+		SelectGameButton.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				SelectGameButton.setIcon(enteredSelectGameImage);
+				SelectGameButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+			}
+			@Override
+			public void mouseExited(MouseEvent e) {
+				SelectGameButton.setIcon(basicSelectGameImage);
+				SelectGameButton.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+			}
+			@Override
+			public void mousePressed(MouseEvent e) {
+				nowScreen++;				//nowScreen=2일때 게임화면을 뜻함
+				selectMusic(nowTrack);
+			}
+		});
+		add(SelectGameButton);
 		
 	}
 
 	public void paint(Graphics g) {
 		screenImage = createImage(Main.SCREEN_WIDTH, Main.SCREEN_HEIGHT);
 		screenGraphic = screenImage.getGraphics();
-		screenDraw(screenGraphic);
+		screenDraw((Graphics2D)screenGraphic);
 		g.drawImage(screenImage, 0, 0, null);
 	}
 
-	public void screenDraw(Graphics g) {
+	public void screenDraw(Graphics2D g) {
 		g.drawImage(Background, 0, 0, null);
-		if(isMainScreen) {
+		if(nowScreen == 1) {
 			g.drawImage(albumImage, 390, 50, null);
 			g.drawImage(titleImage, 390, 550, null);
+			g.drawImage(InformationImage, 440, 675, null);
+		}
+		if(nowScreen == 2) {
+			game.screenDraw(g, nowTrack);
 		}
 		paintComponents(g);
 		this.repaint();
 	}
-	
+	public void goSelect() {
+		startMusic.close();
+		selectTrack(nowTrack);					//해당 노래의 트랙이 실행 된다.
+		startButton.setVisible(false);		//시작화면의 버튼이 안보이게 한다.
+		quitButton.setVisible(false);
+		LeftButton.setVisible(true);		//노래 선택 화면의 버튼이 보이게 한다.
+		RightButton.setVisible(true);
+		BackButton.setVisible(true);
+		SelectGameButton.setVisible(true);
+		nowScreen = 1;
+		selectScreen(nowScreen);
+	}
+	public void selectScreen(int now) {
+		Background = new ImageIcon(Main.class.getResource("../image/"+screenList.get(now).getScreenName())).getImage();
+	}
 	public void selectTrack(int now) {		//해당 트랙의 제목이미지, 앨범이미지, 노래 선택창에서의 노래를 저장
 		if(playingMusic != null) {
 			playingMusic.close();
@@ -277,21 +326,52 @@ public class TypingGame extends JFrame {
 	}
 	
 	public void selectLeft() {
-		if(now == 0) {
-			now = trackList.size() - 1;
+		if(nowTrack == 0) {
+			nowTrack = trackList.size() - 1;
 		}
 		else {
-			now-=1;
+			nowTrack-=1;
 		}
-		selectTrack(now);
+		selectTrack(nowTrack);
 	}
 	public void selectRight() {
-		if(now == trackList.size() - 1) {
-			now = 0;
+		if(nowTrack == trackList.size() - 1) {
+			nowTrack = 0;
 		}
 		else {
-			now+=1;
+			nowTrack+=1;
 		}
-		selectTrack(now);
+		selectTrack(nowTrack);
+	}
+	public void Back() {
+		if(nowScreen==1) {
+			playingMusic.close();
+			startMusic = new Music("startmusic.mp3",true);
+			startMusic.start();
+			startButton.setVisible(true);
+			quitButton.setVisible(true);
+			LeftButton.setVisible(false);
+			RightButton.setVisible(false);
+			BackButton.setVisible(false);
+			SelectGameButton.setVisible(false);
+		}
+		else if(nowScreen==2) {
+			selectTrack(nowTrack);
+			LeftButton.setVisible(true);
+			RightButton.setVisible(true);
+			SelectGameButton.setVisible(true);
+		}
+		nowScreen -= 1;
+		selectScreen(nowScreen);
+	}
+	public void selectMusic(int now) {
+		if(playingMusic!=null) {
+			playingMusic.close();
+		}
+		LeftButton.setVisible(false);
+		RightButton.setVisible(false);
+		SelectGameButton.setVisible(false);
+		selectScreen(now+2);
+		setFocusable(true);
 	}
 }

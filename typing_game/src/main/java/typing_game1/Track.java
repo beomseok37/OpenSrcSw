@@ -6,7 +6,7 @@ public class Track {
 	private String albumImage;		//노래 앨범 이미지
 	private String gameImage;	//게임 실행 시 이미지
 	private String highlightMusic;	//노래 선택창 노래
-	private String gameMusic;		//게임 실행 시 노래
+	private String Music;		//게임 실행 시 노래
 	public String getTitleImage() {
 		return titleImage;
 	}
@@ -31,19 +31,19 @@ public class Track {
 	public void setHighlightMusic(String highlightMusic) {
 		this.highlightMusic = highlightMusic;
 	}
-	public String getGameMusic() {
-		return gameMusic;
+	public String getMusic() {
+		return Music;
 	}
-	public void setGameMusic(String gameMusic) {
-		this.gameMusic = gameMusic;
+	public void setMusic(String gameMusic) {
+		this.Music = gameMusic;
 	}
-	public Track(String titleImage, String albumImage, String gameImage, String highlightMusic, String gameMusic) {
+	public Track(String titleImage, String albumImage, String gameImage, String highlightMusic, String Music) {
 		super();
 		this.titleImage = titleImage;
 		this.albumImage = albumImage;
 		this.gameImage = gameImage;
 		this.highlightMusic = highlightMusic;
-		this.gameMusic = gameMusic;
+		this.Music = Music;
 	}
 	
 
