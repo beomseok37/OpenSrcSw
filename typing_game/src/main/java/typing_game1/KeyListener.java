@@ -19,9 +19,6 @@ public class KeyListener extends KeyAdapter{
 		if(e.getKeyCode() == KeyEvent.VK_F) {
 			TypingGame.game.pressF();
 		}
-		if(e.getKeyCode() == KeyEvent.VK_SPACE) {
-			TypingGame.game.pressSPACE();
-		}
 		if(e.getKeyCode() == KeyEvent.VK_J) {
 			TypingGame.game.pressJ();
 		}
@@ -45,9 +42,6 @@ public class KeyListener extends KeyAdapter{
 		}
 		if(e.getKeyCode() == KeyEvent.VK_F) {
 			TypingGame.game.releaseF();
-		}
-		if(e.getKeyCode() == KeyEvent.VK_SPACE) {
-			TypingGame.game.releaseSPACE();
 		}
 		if(e.getKeyCode() == KeyEvent.VK_J) {
 			TypingGame.game.releaseJ();

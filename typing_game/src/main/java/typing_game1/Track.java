@@ -2,11 +2,19 @@ package typing_game1;
 
 public class Track {
 	
+	private String title;		//노래 제목
 	private String titleImage;	//노래 제목 이미지
 	private String albumImage;		//노래 앨범 이미지
 	private String gameImage;	//게임 실행 시 이미지
 	private String highlightMusic;	//노래 선택창 노래
 	private String Music;		//게임 실행 시 노래
+	
+	public String getTitle() {
+		return title;
+	}
+	public void setTitle(String title) {
+		this.title = title;
+	}
 	public String getTitleImage() {
 		return titleImage;
 	}
@@ -37,13 +45,14 @@ public class Track {
 	public void setMusic(String gameMusic) {
 		this.Music = gameMusic;
 	}
-	public Track(String titleImage, String albumImage, String gameImage, String highlightMusic, String Music) {
+	public Track(String title, String titleImage, String albumImage, String gameImage, String highlightMusic, String Music) {
 		super();
 		this.titleImage = titleImage;
 		this.albumImage = albumImage;
 		this.gameImage = gameImage;
 		this.highlightMusic = highlightMusic;
 		this.Music = Music;
+		this.title = title;
 	}
 	
 
