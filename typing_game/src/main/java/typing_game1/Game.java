@@ -5,9 +5,12 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.RenderingHints;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 
 import javax.swing.ImageIcon;
+
 
 public class Game extends Thread{
 	private Image Game_BottomImage = new ImageIcon(Main.class.getResource("../image/Game_bottom.png")).getImage();
@@ -26,10 +29,11 @@ public class Game extends Thread{
 	private Image Game_K = new ImageIcon(Main.class.getResource("../image/Game_K.png")).getImage();
 	private Image Game_L = new ImageIcon(Main.class.getResource("../image/Game_L.png")).getImage();
 	
+	private Image Judge_Image;
+	private String text="";
 	ArrayList<Note> Notelist = new ArrayList<Note>();
 	
-	public void screenDraw(Graphics2D g, int nowTrack) {
-		
+	public void screenDraw(Graphics2D g, int nowTrack,Graphics2D t) {
 		g.drawImage(Game_NoteLine_SImage, 330, 0, null);
 		g.drawImage(Game_NoteLine_DImage, 434, 0, null);
 		g.drawImage(Game_NoteLine_FImage, 538, 0, null);
@@ -45,6 +49,7 @@ public class Game extends Thread{
 				i--;
 			}
 			else {
+				if(!note.getPushed() && note.getY()>620)Judge_Image = new ImageIcon(Main.class.getResource("../image/judge_miss.png")).getImage();
 				note.screendraw(g);
 			}
 		}
@@ -54,12 +59,17 @@ public class Game extends Thread{
 		g.drawImage(Game_J, 642, 600, null);
 		g.drawImage(Game_K, 746, 600, null);
 		g.drawImage(Game_L, 850, 600, null);
+		g.drawImage(Judge_Image,540,420,null);
 		g.setColor(Color.white);
 		g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 		g.setFont(new Font("Arial", Font.BOLD, 30));
+		t.setColor(Color.black);
+		t.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+		t.setFont(new Font("Arial", Font.BOLD, 20));
 		if(nowTrack==0)g.drawString("Me After You - Paul Kim", 20,710);
 		if(nowTrack==1)g.drawString("Canon - Johan Pachelbel", 20,710);
 		if(nowTrack==2)g.drawString("Sleeping Beauty - Paul", 20,710);
+		
 	}
 	
 	private String titleName;	//노래 제목
@@ -118,7 +128,6 @@ public class Game extends Thread{
 	}
 	@Override
 	public void run() {
-		
 		dropNotes(this.titleName);
 	}
 	
@@ -380,16 +389,35 @@ public class Game extends Thread{
 				idx++;
 			}
 		}
+		
 	}
 	
 	public void judge(String input) {
 		for(int i=0;i<Notelist.size();i++) {
 			Note note=Notelist.get(i);
 			if(input==note.getNoteType()) {
-				note.judge();
+				judge_Event(note.judge());
 				break;
 			}
 		}
 	}
-	
+	public void judge_Event(String judge) {
+		if(judge.equals("Miss")) {
+			TypingGame.Miss++;
+			Judge_Image = new ImageIcon(Main.class.getResource("../image/judge_miss.png")).getImage();
+		}
+		else if(judge.equals("Good")) {
+			TypingGame.Good++;
+			Judge_Image = new ImageIcon(Main.class.getResource("../image/judge_good.png")).getImage();
+		}
+		else if(judge.equals("Great")) {
+			TypingGame.Great++;
+			Judge_Image = new ImageIcon(Main.class.getResource("../image/judge_great.png")).getImage();
+		}
+		else if(judge.equals("Perfect")) {
+			TypingGame.Perfect++;
+			Judge_Image = new ImageIcon(Main.class.getResource("../image/judge_perfect.png")).getImage();
+		}
+		
+	}
 }

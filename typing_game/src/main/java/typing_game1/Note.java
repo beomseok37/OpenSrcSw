@@ -9,15 +9,22 @@ public class Note extends Thread{
 	private Image Game_NoteImage = new ImageIcon(Main.class.getResource("../image/Game_note.png")).getImage();
 	private int x,y = 600-(1000/Main.SLEEP_TIME*Main.NOTE_SPEED)*Main.REACH_TIME;
 	private boolean proceeded = true;
-	public String noteType;
+	private String noteType;
+	private boolean pushed=false;
 	public boolean getProceeded() {
 		return proceeded;
 	}
 	public String getNoteType() {
 		return noteType;
 	}
+	public int getY() {
+		return y;
+	}
 	public void close() {
 		proceeded=false;
+	}
+	public boolean getPushed() {
+		return pushed;
 	}
 	public Note(String noteType) {
 		this.noteType=noteType;
@@ -71,34 +78,52 @@ public class Note extends Thread{
 		}
 	}
 	
-	public void judge() {
+	public String judge() {
 		if(y>640) {
 			System.out.println("Late");
 			close();
+			pushed=true;
+			return "Miss";
 		}
 		else if(y>630) {
 			System.out.println("Good");
 			close();
+			pushed=true;
+			return "Good";
 		}
 		else if(y>610) {
 			System.out.println("Great");
 			close();
+			pushed=true;
+			return "Great";
 		}
 		else if(y==600) {
 			System.out.println("Perfect");
 			close();
+			pushed=true;
+			return "Perfect";
 		}
 		else if(y>590) {
 			System.out.println("Great");
 			close();
+			pushed=true;
+			return "Great";
 		}
 		else if(y>580) {
 			System.out.println("Good");
 			close();
+			pushed=true;
+			return "Good";
 		}
 		else if(y>500) {
 			System.out.println("Early");
 			close();
+			pushed=true;
+			return "Miss";
+		}
+		else {
+			
+			return "None";
 		}
 	}
 }

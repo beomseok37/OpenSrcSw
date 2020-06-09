@@ -36,6 +36,8 @@ public class TypingGame extends JFrame {
 	private ImageIcon enteredBackButtonImage = new ImageIcon(Main.class.getResource("../image/enteredBackImage.png"));
 	private ImageIcon basicSelectGameImage = new ImageIcon(Main.class.getResource("../image/basicSelectGame.png"));
 	private ImageIcon enteredSelectGameImage = new ImageIcon(Main.class.getResource("../image/enteredSelectGame.png"));
+	private ImageIcon basicResultButtonImage = new ImageIcon(Main.class.getResource("../image/Game_result_button_basic.png"));
+	private ImageIcon enteredResultButtonImage = new ImageIcon(Main.class.getResource("../image/Game_result_button_entered.png"));
 	
 
 	private JLabel menuBar = new JLabel(new ImageIcon(Main.class.getResource("../image/menuBar.png")));
@@ -46,7 +48,7 @@ public class TypingGame extends JFrame {
 	private JButton RightButton = new JButton(basicRightButtonImage);
 	private JButton BackButton = new JButton(basicBackButtonImage);
 	private JButton SelectGameButton = new JButton(basicSelectGameImage);
-	
+	private JButton ResultButton = new JButton(basicResultButtonImage);
 	
 	private int mouseX, mouseY;
 	
@@ -65,7 +67,10 @@ public class TypingGame extends JFrame {
 	private int nowScreen = 0;		//현재 화면
 	
 	public static Game game;
-	
+	public static int Perfect=0;
+	public static int Great=0;
+	public static int Good=0;
+	public static int Miss=0;
 	public TypingGame() {
 		
 		trackList.add(new Track("meet you","meetyou_title.png","Meetyou_Album.png", "Meetyou_Game.jpg", "meetyou.highlight.mp3", "meetyou.mp3"));
@@ -76,6 +81,7 @@ public class TypingGame extends JFrame {
 		screenList.add(new Screen(trackList.get(0).getGameImage()));	//screenList.get(2) == 너름만나 게임화면
 		screenList.add(new Screen(trackList.get(1).getGameImage()));	//screenList.get(3) == 캐논변주곡 게임화면
 		screenList.add(new Screen(trackList.get(2).getGameImage()));	//screenList.get(4) == sleeping beauty 게임화면
+		screenList.add(new Screen("Game_result.png"));	//screenList.get(5) ==결과화면
 		
 		setUndecorated(true);
 		setTitle("Typing Game");
@@ -91,6 +97,7 @@ public class TypingGame extends JFrame {
 		RightButton.setVisible(false);
 		BackButton.setVisible(false);
 		SelectGameButton.setVisible(false);
+		ResultButton.setVisible(false);
 		
 		selectScreen(nowScreen);	//시작화면을 screenList.get(0)로 설정
 		startMusic.start();			//시작화면 음악을 시작
@@ -280,16 +287,37 @@ public class TypingGame extends JFrame {
 		});
 		add(SelectGameButton);
 		
+		ResultButton.setBounds(1000, 50, 200, 80);	//결과보기버튼
+		ResultButton.setBorderPainted(false);
+		ResultButton.setContentAreaFilled(false);
+		ResultButton.setFocusPainted(false);
+		ResultButton.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				ResultButton.setIcon(enteredResultButtonImage);
+				ResultButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+			}
+			@Override
+			public void mouseExited(MouseEvent e) {
+				ResultButton.setIcon(basicResultButtonImage);
+				ResultButton.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+			}
+			@Override
+			public void mousePressed(MouseEvent e) {
+				goResult();
+			}
+		});
+		add(ResultButton);
 	}
 
 	public void paint(Graphics g) {
 		screenImage = createImage(Main.SCREEN_WIDTH, Main.SCREEN_HEIGHT);
 		screenGraphic = screenImage.getGraphics();
-		screenDraw((Graphics2D)screenGraphic);
+		screenDraw((Graphics2D)screenGraphic,(Graphics2D)screenGraphic);
 		g.drawImage(screenImage, 0, 0, null);
 	}
 
-	public void screenDraw(Graphics2D g) {
+	public void screenDraw(Graphics2D g,Graphics2D g2) {
 		g.drawImage(Background, 0, 0, null);	//항상 배경화면을 그림
 		if(nowScreen == 1) {					//배경이 screenList.get(1)일 경우	(게임선택화면)
 			g.drawImage(albumImage, 390, 50, null);		//앨범이미지
@@ -297,7 +325,20 @@ public class TypingGame extends JFrame {
 			g.drawImage(InformationImage, 440, 675, null);
 		}
 		if(nowScreen == 2) {		//배경이 screenList.get(2)일 경우	(게임화면)
-			game.screenDraw(g, nowTrack);
+			game.screenDraw(g, nowTrack, g2);
+		}
+		if(nowScreen == 5) {
+			g.setColor(Color.white);
+			g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+			g.setFont(new Font("Arial", Font.BOLD, 40));
+			g.drawString("Perfect  " + Perfect, 300, 350);
+			g.drawString("Great  " + Great, 300, 400);
+			g.drawString("Good  " + Good, 300, 450);
+			g.drawString("Miss  " + Miss, 300, 500);
+			if(nowTrack==0)g.drawString("Me After You - Paul Kim", 600,150);
+			if(nowTrack==1)g.drawString("Canon - Johan Pachelbel", 600,150);
+			if(nowTrack==2)g.drawString("Sleeping Beauty - Paul", 600,150);
+			g.drawImage(albumImage, 600, 170, null);
 		}
 		paintComponents(g);			
 		this.repaint();
@@ -346,7 +387,7 @@ public class TypingGame extends JFrame {
 		selectTrack(nowTrack);
 	}
 	public void Back() {	//뒤로가기 버튼 눌렀을 경우
-		if(nowScreen==1) {
+		if(nowScreen==1) {	//게임선택화면일시
 			playingMusic.close();
 			startMusic = new Music("startmusic.mp3",true);
 			startMusic.start();
@@ -356,16 +397,25 @@ public class TypingGame extends JFrame {
 			RightButton.setVisible(false);
 			BackButton.setVisible(false);
 			SelectGameButton.setVisible(false);
+			nowScreen -= 1;
 		}
-		else if(nowScreen==2) {
+		else if(nowScreen==2) {	//게임화면일시
 			selectTrack(nowTrack);
 			LeftButton.setVisible(true);
 			RightButton.setVisible(true);
 			SelectGameButton.setVisible(true);
 			game.close();
 			game=null;
+			nowScreen -= 1;
 		}
-		nowScreen -= 1;
+		else if(nowScreen==5) {	//결과화면일시
+			nowScreen=nowScreen-4;
+			LeftButton.setVisible(true);
+			RightButton.setVisible(true);
+			SelectGameButton.setVisible(true);
+			ResultButton.setVisible(false);
+			selectTrack(nowTrack);
+		}
 		selectScreen(nowScreen);
 	}
 	public void selectMusic(int now) {	//nowTrack에 해당하는 노래 재생
@@ -375,8 +425,15 @@ public class TypingGame extends JFrame {
 		LeftButton.setVisible(false);
 		RightButton.setVisible(false);
 		SelectGameButton.setVisible(false);
+		ResultButton.setVisible(true);
 		selectScreen(now+2);		
 		game=new Game(trackList.get(now).getTitle(),trackList.get(now).getMusic());//화면이 바뀜과 동시에 노래재생되도록 한다.
 		setFocusable(true);
+	}
+	public void goResult() {
+		game.close();
+		nowScreen=5;	//결과화면
+		selectScreen(nowScreen);
+		ResultButton.setVisible(false);
 	}
 }
